@@ -4,10 +4,9 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SambazaModel extends Model {
-
   Map<String, dynamic> _cache = <String, dynamic>{};
-  SharedPreferences _prefs;
-  Future<void> _ready;
+  late SharedPreferences _prefs; // ✅ FIXED HERE
+  late Future<void> _ready;
 
   SambazaModel() {
     _ready = SharedPreferences.getInstance().then(_init);
@@ -15,8 +14,8 @@ class SambazaModel extends Model {
 
   void _init(SharedPreferences prefs) {
     _prefs = prefs;
-    String persisted = _prefs.getString('SambazaCache');
-    if ( persisted != null ) {
+    String? persisted = _prefs.getString('SambazaCache');
+    if (persisted != null) {
       _cache.addAll(json.decode(persisted));
     }
   }
@@ -29,12 +28,12 @@ class SambazaModel extends Model {
       duration,
       () {
         remove(key);
-      }
+      },
     );
   }
 
   bool has(String key) => _cache.containsKey(key);
-  
+
   dynamic noSuchMethod(Invocation invocation) {
     if (invocation.isGetter) {
       var ret = _cache[invocation.memberName.toString()];
@@ -59,7 +58,7 @@ class SambazaModel extends Model {
 
   void save(String key, dynamic value, [notify = true]) {
     _cache[key] = value;
-    if ( notify == true ) {
+    if (notify == true) {
       notifyListeners();
     }
     _persist();
@@ -67,12 +66,11 @@ class SambazaModel extends Model {
 
   void saveAll(Map<String, dynamic> pairs, [notify = true]) {
     _cache.addAll(pairs);
-    if ( notify == true ) {
+    if (notify == true) {
       notifyListeners();
     }
     _persist();
   }
 
   Future<void> whenReady() => _ready;
-
 }
